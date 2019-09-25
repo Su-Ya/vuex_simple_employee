@@ -1,4 +1,7 @@
 # simple_employee_database
+## demo
+[demo](https://su-ya.github.io/vuex_simple_employee/.)
+
 ## 目的
 - 如何用 Vuex 實作員工資料的 CRUD
 
