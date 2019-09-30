@@ -6,7 +6,11 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    employees: []
+    employees: [],
+    newEmployee: {
+      name: null,
+      email: null
+    }
   },
   getters: {
     employees(state) {
@@ -14,11 +18,17 @@ export default new Vuex.Store({
     }
   },
   mutations: {
-    setEmployees(state, data) {
-      state.employees = data;
+    updateNewEmployeeName(state, name) {
+      state.newEmployee.name = name;
+    },
+    updateNewEmployeeEmail(state, email) {
+      state.newEmployee.email = email;
     },
     pushToEmployees(state, responseEmployee) {
       state.employees.push(responseEmployee);
+    },
+    setEmployees(state, data) {
+      state.employees = data;
     },
     updateEmployee(state, cachedEmployee) {
       console.log("updatedId", cachedEmployee.id);
@@ -35,17 +45,19 @@ export default new Vuex.Store({
       const res = await server.get("/users");
       commit("setEmployees", res);
     },
-    async addNewEmployee({ commit }, postData) {
+    async addNewEmployee(context) {
       /**********************************************  
         因練習用 API 都是固定回傳10筆資料，
-        所以不能用 await dispatch('getEmployees') 更新畫面
-        addNewEmployee({ commit, dispatch }, postData)
+        所以不能用 await context.dispatch('getEmployees') 更新畫面
       ***********************************************/
 
       //post 會回傳剛新增的 employee 資料
       //不管新增幾筆，回傳的 id 都是 11，所以只能建11筆資料
-      const responseEmployee = await server.post("/users", postData);
-      commit("pushToEmployees", responseEmployee);
+      const responseEmployee = await server.post(
+        "/users",
+        context.state.newEmployee
+      );
+      context.commit("pushToEmployees", responseEmployee);
     },
     async editEmployee({ commit }, cachedEmployee) {
       /**********************************************  

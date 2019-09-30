@@ -3,66 +3,88 @@
     <div class="spane-30">
       <div>
         <label>Employee name</label>
-        <input type="text" v-model="newEmployee.name" />
+        <input
+          type="text"
+          :value="newEmployee.name"
+          @input="updateNewEmployeeName"
+        />
       </div>
       <div>
         <label>Employee Email</label>
-        <input type="text" v-model="newEmployee.email" />
+        <input
+          type="text"
+          :value="newEmployee.email"
+          @input="updateNewEmployeeEmail"
+        />
       </div>
       <button @click="addNew">Add Employee</button>
     </div>
-    <div>
+    <section>
       <div class="table-title">
         <div>Name</div>
         <div>Email</div>
         <div>Actions</div>
       </div>
       <div v-for="employee in gettersEmployees" :key="employee.id">
-        <div class="table-text" v-if="editingId === employee.id">
-          <div><input type="text" v-model="cachedEmployee.name" /></div>
-          <div><input type="text" v-model="cachedEmployee.email" /></div>
+        <div class="table-text">
           <div>
+            <input
+              type="text"
+              :class="{ inputBorderNone: !(editingId === employee.id) }"
+              :value="employee.name"
+              :disabled="!(editingId === employee.id)"
+              @input="updateCachedEmployee('name', $event)"
+            />
+          </div>
+          <div>
+            <input
+              type="text"
+              :class="{ inputBorderNone: !(editingId === employee.id) }"
+              :value="employee.email"
+              :disabled="!(editingId === employee.id)"
+              @input="updateCachedEmployee('email', $event)"
+            />
+          </div>
+          <div v-if="editingId === employee.id">
             <button @click="submit">送出</button>
             <button @click="cancel">取消</button>
           </div>
-        </div>
-        <div class="table-text" v-else>
-          <div>{{ employee.name }}</div>
-          <div>{{ employee.email }}</div>
-          <div>
+          <div v-else>
             <button @click="editMode(employee)">編輯</button>
             <button @click="deleteEm(employee.id)">刪除</button>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
 <script>
+import { mapState } from "vuex";
 export default {
   name: "employees",
   data() {
     return {
       editingId: null,
-      newEmployee: {
-        name: null,
-        email: null
-      },
       cachedEmployee: {}
     };
   },
   methods: {
+    updateNewEmployeeName(event) {
+      this.$store.commit("updateNewEmployeeName", event.target.value);
+    },
+    updateNewEmployeeEmail(event) {
+      this.$store.commit("updateNewEmployeeEmail", event.target.value);
+    },
     addNew() {
-      this.$store.dispatch("addNewEmployee", this.newEmployee);
-      this.newEmployee = {
-        name: null,
-        email: null
-      };
+      this.$store.dispatch("addNewEmployee");
     },
     editMode(employee) {
       this.editingId = employee.id;
       this.cachedEmployee = Object.assign({}, employee);
+    },
+    updateCachedEmployee(key, event) {
+      this.cachedEmployee[key] = event.target.value;
     },
     submit() {
       this.$store.dispatch("editEmployee", this.cachedEmployee);
@@ -78,7 +100,8 @@ export default {
   computed: {
     gettersEmployees() {
       return this.$store.getters.employees;
-    }
+    },
+    ...mapState({ newEmployee: state => state.newEmployee })
   }
 };
 </script>
@@ -97,5 +120,8 @@ export default {
 }
 .spane-30 {
   margin-bottom: 30px;
+}
+.inputBorderNone {
+  border: 0;
 }
 </style>
